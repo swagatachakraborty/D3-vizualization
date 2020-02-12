@@ -61,6 +61,7 @@ const drawCompanies = (companies, yAxisValue) => {
     .attr('text-anchor', 'end');
 
   const rectangles = g.selectAll('rect');
+  const c = d3.scaleOrdinal(d3.schemeCategory10);
   const newRects = rectangles
     .data(companies)
     .enter()
@@ -68,7 +69,8 @@ const drawCompanies = (companies, yAxisValue) => {
     .attr('y', c => y(c[yAxisValue]))
     .attr('x', c => x(c.Name))
     .attr('height', c => y(0) - y(c[yAxisValue]))
-    .attr('width', x.bandwidth);
+    .attr('width', x.bandwidth)
+    .attr('fill', b => c(b.Name));
 };
 
 const main = () => {
