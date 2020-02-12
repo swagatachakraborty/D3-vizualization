@@ -1,0 +1,12 @@
+svg {
+  border: 1px solid grey;
+}
+
+rect {
+  fill: grey;
+}
+
+.axis-lable {
+  text-anchor: middle;
+  font-size: 20px;
+}
