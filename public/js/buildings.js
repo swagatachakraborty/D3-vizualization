@@ -69,7 +69,6 @@ const drawBuildings = buildings => {
     .attr('x', b => x(b.name))
     .attr('height', b => y(0) - y(b.height))
     .attr('width', x.bandwidth);
-  // .attr('transform', 'rotate(90)');
 };
 
 const main = () => {
