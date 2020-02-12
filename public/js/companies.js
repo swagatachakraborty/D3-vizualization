@@ -1,4 +1,4 @@
-const drawCompanies = companies => {
+const drawCompanies = (companies, yAxisValue) => {
   const chartSize = { width: 800, height: 600 };
   const margin = { left: 100, right: 10, top: 10, bottom: 150 };
 
@@ -7,7 +7,7 @@ const drawCompanies = companies => {
 
   const y = d3
     .scaleLinear()
-    .domain([0, _.maxBy(companies, 'CMP').CMP])
+    .domain([0, _.maxBy(companies, yAxisValue)[yAxisValue]])
     .range([height, 0]);
 
   const x = d3
@@ -33,7 +33,7 @@ const drawCompanies = companies => {
     .text('Companies');
 
   g.append('text')
-    .text('CMP in Rs.')
+    .text(yAxisValue + ' in Rs.')
     .attr('class', 'y axis-lable')
     .attr('x', -height / 2)
     .attr('y', -60)
@@ -65,9 +65,9 @@ const drawCompanies = companies => {
     .data(companies)
     .enter()
     .append('rect')
-    .attr('y', c => y(c.CMP))
+    .attr('y', c => y(c[yAxisValue]))
     .attr('x', c => x(c.Name))
-    .attr('height', c => y(0) - y(c.CMP))
+    .attr('height', c => y(0) - y(c[yAxisValue]))
     .attr('width', x.bandwidth);
 };
 
@@ -83,7 +83,7 @@ const main = () => {
       QSales: +company.QSales,
       ROCE: +company.ROCE
     };
-  }).then(drawCompanies);
+  }).then(c => drawCompanies(c, 'CMP'));
 };
 
 window.onload = main;
