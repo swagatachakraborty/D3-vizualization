@@ -1,10 +1,9 @@
+const chartSize = { width: 800, height: 600 };
+const margin = { left: 100, right: 10, top: 10, bottom: 150 };
+const height = chartSize.height - margin.top - margin.bottom;
+const width = chartSize.width - margin.left - margin.right;
+
 const drawCompanies = (companies, yAxisValue) => {
-  const chartSize = { width: 800, height: 600 };
-  const margin = { left: 100, right: 10, top: 10, bottom: 150 };
-
-  const height = chartSize.height - margin.top - margin.bottom;
-  const width = chartSize.width - margin.left - margin.right;
-
   const y = d3
     .scaleLinear()
     .domain([0, _.maxBy(companies, yAxisValue)[yAxisValue]])
@@ -17,8 +16,7 @@ const drawCompanies = (companies, yAxisValue) => {
     .padding(0.3);
 
   const svg = d3
-    .select('#chart-area')
-    .append('svg')
+    .select('#chart-area svg')
     .attr('height', chartSize.height)
     .attr('width', chartSize.width);
 
@@ -73,6 +71,34 @@ const drawCompanies = (companies, yAxisValue) => {
     .attr('fill', b => c(b.Name));
 };
 
+const formats = { MarketCap: d => `${d / 1000}k Cr /-` };
+
+const updateCompanies = function(companies, fieldName) {
+  const svg = d3.select('#chart-area svg');
+  svg.select('.y.axis-lable').text(fieldName);
+  const y = d3
+    .scaleLinear()
+    .domain([0, _.maxBy(companies, fieldName)[fieldName]])
+    .range([height, 0]);
+
+  const yAxis = d3
+    .axisLeft(y)
+    .tickFormat(d => d + '/-')
+    .ticks(12);
+
+  svg.select('.y-axis').call(yAxis);
+
+  svg
+    .selectAll('rect')
+    .data(companies)
+    .transition()
+    .duration(500)
+    .attr('y', c => y(c[fieldName]))
+    .transition()
+    .duration(500)
+    .attr('height', c => y(0) - y(c[fieldName]));
+};
+
 const main = () => {
   d3.csv('data/companies.csv', company => {
     return {
@@ -85,7 +111,15 @@ const main = () => {
       QSales: +company.QSales,
       ROCE: +company.ROCE
     };
-  }).then(c => drawCompanies(c, 'CMP'));
+  }).then(c => {
+    const fields = ['MarketCap', 'PE', 'CMP'];
+    let currentFieldIndex = 0;
+    drawCompanies(c, fields[currentFieldIndex]);
+    setInterval(() => {
+      currentFieldIndex = ++currentFieldIndex % fields.length;
+      updateCompanies(c, fields[currentFieldIndex]);
+    }, 2000);
+  });
 };
 
 window.onload = main;

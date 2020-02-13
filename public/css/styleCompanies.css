@@ -6,3 +6,7 @@ svg {
   text-anchor: middle;
   font-size: 20px;
 }
+
+.x-axis {
+  font-weight: bold;
+}
