@@ -1,0 +1,17 @@
+svg {
+  border: 1px solid grey;
+}
+
+.axis-lable {
+  text-anchor: middle;
+  font-size: 20px;
+}
+
+.x-axis {
+  font-weight: bold;
+}
+
+.close {
+  fill: none;
+  stroke: blue;
+}
