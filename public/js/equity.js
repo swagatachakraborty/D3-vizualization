@@ -1,4 +1,4 @@
-const CHART_SIZE = { width: 1100, height: 700 };
+const CHART_SIZE = { width: 1100, height: 600 };
 const MARGIN = { left: 150, right: 10, top: 10, bottom: 150 };
 const HEIGHT = CHART_SIZE.height - MARGIN.top - MARGIN.bottom;
 const WIDTH = CHART_SIZE.width - MARGIN.left - MARGIN.right;
@@ -39,8 +39,30 @@ const initializeVizualization = function() {
   g.append('g').attr('class', 'y axis');
 };
 
+const selectDateRange = function(data) {
+  const slider = createD3RangeSlider(
+    firstDate(data).getFullYear(),
+    lastDate(data).getFullYear(),
+    '#slider-container'
+  );
+
+  slider.onChange(({ begin, end }) => {
+    d3.select('#range-label').text(begin + ' <-> ' + end);
+
+    const filteredData = data.filter(
+      ({ Date }) => Date.getFullYear() >= begin && Date.getFullYear() <= end
+    );
+
+    updateChart(filteredData);
+  });
+
+  slider.range(firstDate(data).getFullYear(), lastDate(data).getFullYear());
+};
+
 const updateChart = function(data) {
   const svg = d3.select('#chart-area svg');
+
+  svg.selectAll('path').remove();
 
   const y = d3
     .scaleLinear() //read
@@ -80,7 +102,7 @@ const updateChart = function(data) {
     .select('.prices')
     .append('path') //read
     .attr('class', 'sma')
-    .attr('d', SMALine(_.drop(data, 99)));
+    .attr('d', SMALine(data.filter(({ SMA }) => SMA)));
 };
 
 const parseData = function({ Date, Volume, AdjClose, ...rest }) {
@@ -93,10 +115,10 @@ const parseData = function({ Date, Volume, AdjClose, ...rest }) {
 
 const addSMADetails = data => {
   data.map((val, i) => {
-    if (i >= 99)
-      val.SMA =
-        data.slice(i - 99, i + 1).reduce((init, val) => init + val.Close, 0) /
-        100;
+    const SM = data
+      .slice(i - 99, i + 1)
+      .reduce((init, val) => init + val.Close, 0);
+    val.SMA = SM / 100;
   });
 };
 
@@ -104,6 +126,7 @@ const main = () => {
   d3.csv('data/nifty.csv', parseData).then(d => {
     initializeVizualization();
     addSMADetails(d);
+    selectDateRange(d);
     updateChart(d);
   });
 };
