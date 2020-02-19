@@ -1,4 +1,4 @@
-const CHART_SIZE = { width: 800, height: 600 };
+const CHART_SIZE = { width: 1100, height: 700 };
 const MARGIN = { left: 150, right: 10, top: 10, bottom: 150 };
 const HEIGHT = CHART_SIZE.height - MARGIN.top - MARGIN.bottom;
 const WIDTH = CHART_SIZE.width - MARGIN.left - MARGIN.right;
@@ -60,7 +60,7 @@ const updateChart = function(data) {
 
   svg.select('.x.axis').call(xAxis);
 
-  const line = d3
+  const closingPriceLine = d3
     .line() //read
     .x(q => x(q.Date))
     .y(q => y(q.Close));
@@ -69,7 +69,18 @@ const updateChart = function(data) {
     .select('.prices')
     .append('path') //read
     .attr('class', 'close')
-    .attr('d', line(data));
+    .attr('d', closingPriceLine(data));
+
+  const SMALine = d3
+    .line() //read
+    .x(q => x(q.Date))
+    .y(q => y(q.SMA));
+
+  svg
+    .select('.prices')
+    .append('path') //read
+    .attr('class', 'sma')
+    .attr('d', SMALine(_.drop(data, 99)));
 };
 
 const parseData = function({ Date, Volume, AdjClose, ...rest }) {
@@ -80,9 +91,19 @@ const parseData = function({ Date, Volume, AdjClose, ...rest }) {
   return { Date, ...rest };
 };
 
+const addSMADetails = data => {
+  data.map((val, i) => {
+    if (i >= 99)
+      val.SMA =
+        data.slice(i - 99, i + 1).reduce((init, val) => init + val.Close, 0) /
+        100;
+  });
+};
+
 const main = () => {
   d3.csv('data/nifty.csv', parseData).then(d => {
     initializeVizualization();
+    addSMADetails(d);
     updateChart(d);
   });
 };
